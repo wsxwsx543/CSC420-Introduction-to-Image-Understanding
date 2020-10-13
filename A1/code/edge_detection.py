@@ -9,7 +9,7 @@ from matplotlib import pyplot as plt
 import matplotlib.image as mpimg
 from mpl_toolkits.mplot3d import Axes3D
 
-# Reference (Gaussian distribution): https://en.wikipedia.org/wiki/Gaussian_function
+# Reference (Gaussian distribution): https://en.wikipedia.org/wiki/Multivariate_normal_distribution
 def getGaussianKernel(H=3, W=3, sigma=1):
     """
     Given a kernel size and a standard deviation. output the gaussian kernel.
@@ -54,6 +54,7 @@ def visualize(size, sigma):
 
     # visualization
     fig = plt.figure()
+    # Reference Document: https://matplotlib.org/3.1.1/api/_as_gen/mpl_toolkits.mplot3d.axes3d.Axes3D.html
     ax = Axes3D(fig)
     X = np.arange(-(size[0]-1)/2, (size[0]-1)/2+1, 1)
     Y = np.arange(-(size[1]-1)/2, (size[1]-1)/2+1, 1)
@@ -105,6 +106,7 @@ def getGradImage(image):
     Output: the gradient image.
     """
     rows, cols = image.shape
+    # from handout
     sobelx = np.array([[-1,  0, 1],
                        [-2,  0,  2],
                        [-1,  0,  1]])
@@ -149,7 +151,7 @@ def getGradImage(image):
 def edgeDetection(gradImage):
     """
     Calculate the final edge image(edges are with pixel value 255 and other with 
-    pixel value 0) with the auto-threshold algorithm.
+    pixel value 0) with the auto-threshold algorithm (In Question 4).
 
     Input:
     gradImage: the gradient image after applying the getGradImage.
@@ -187,6 +189,7 @@ def rgb2gray(rgb):
     """
     Transfer the rgb image to gray image.
     """
+    # from discussion board
     return np.dot(rgb[..., :3], [0.2125, 0.7154, 0.0721])
 
 

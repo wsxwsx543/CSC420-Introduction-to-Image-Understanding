@@ -68,6 +68,7 @@ def connected_component_labeling(image):
             if image[i][j] == BACKGROUND or labelledImage[i][j] != 0:
                 continue
             
+            # Reference Document for Queue in python: https://docs.python.org/3/library/queue.html
             # current pixel is foreground pixel
             q = queue.Queue()
             labelledImage[i][j] = currLabel
