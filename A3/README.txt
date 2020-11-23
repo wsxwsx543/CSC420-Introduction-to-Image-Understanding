@@ -34,10 +34,10 @@ model should be less than 0.995 in Q2(a).py
 Question 3:
 python ./code/Q3.py
 
-In this question, I implement the Lucus-Kanade algorithm and using this algorithm
-to detect the motion for each image sequence. If you run the code above, it will pick 
-a representative frame for each image sequences and display the result for the selected 
-frame, which means 11 images will be shown in total.
+In this question, I implement the Lucus-Kanade algorithm with iterative refinement
+and using this algorithm to detect the motion for each image sequence. If you run the 
+code above, it will pick a representative frame for each image sequences and display the 
+result for the selected frame, which means 11 images will be shown in total.
 
 
 Question 4:
