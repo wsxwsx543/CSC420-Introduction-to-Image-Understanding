@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.linalg as LA
 import cv2
 import plotly.graph_objects as go
 
@@ -38,11 +39,40 @@ def compute_point_cloud(imageNumber):
     R = extrinsics[:, :3]
     # t
     t = extrinsics[:, 3]
+    # print(depth.shape)
+    # print(depth)
+    # print('-------------------')
+    # print(R.shape, R)
+    # print(t.shape, t)
+    
+    rotation = np.identity(4, dtype=np.float32)
+    rotation[:3, :3] = R
+    # print(rotation)
 
-# YOUR IMPLEMENTATION CAN GO HERE:
+    translation = np.identity(4, dtype=np.float32)
+    translation[:3, 3] = t
 
+    H, W = depth.shape
+    N = H * W
+    px = intrinsics[0, 2]
+    py = intrinsics[1, 2]
 
-    return results
+    result = np.zeros((N, 6), dtype=np.float32)
+    K = intrinsics * np.array([[-1, 1, 1],[1, -1, 1],[1, 1, 1]], dtype=np.float32)
+    # print(K)
+    for h in range(H):
+        for w in range(W):
+            z = -1 * depth[h, w]
+            x, y = w, H-1-h
+            q = np.array([z*x, z*y, z], dtype=np.float32)
+            # Q = LA.inv(intrinsics) @ q
+            Q = LA.inv(K) @ q
+            homo_Q = np.concatenate([Q, [1]])
+            res = LA.inv(translation) @ LA.inv(rotation) @ homo_Q
+            # print(w, H-1-h, depth[h, w], z, q, Q, res[:3])
+            result[h*W+w, :3] = res[:3]
+            result[h*W+w, 3:] = rgb[h, w, :]
+    return result
 
 
 def plot_pointCloud(pc):
@@ -53,7 +83,7 @@ def plot_pointCloud(pc):
     fig = go.Figure(data=[go.Scatter3d(
         x=pc[:, 0],
         y=pc[:, 1],
-        z=-pc[:, 2],
+        z=pc[:, 2],
         mode='markers',
         marker=dict(
             size=2,
@@ -67,7 +97,8 @@ def plot_pointCloud(pc):
 
 if __name__ == '__main__':
 
-    imageNumbers = ['1/', '2/', '3/']
+    # imageNumbers = ['1/', '2/', '3/']
+    imageNumbers = ['A4Q3/A4Q3/3/']
     for  imageNumber in  imageNumbers:
 
         # Part a)
