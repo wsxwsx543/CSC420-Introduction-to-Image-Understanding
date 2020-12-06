@@ -1,6 +1,8 @@
 import numpy as np
 import numpy.linalg as LA
 import cv2
+import math
+import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 
 
@@ -34,44 +36,23 @@ def compute_point_cloud(imageNumber):
      .
      .
     '''
+    # read
     depth, rgb, extrinsics, intrinsics = get_data(imageNumber)
-    # rotation matrix
-    R = extrinsics[:, :3]
-    # t
-    t = extrinsics[:, 3]
-    # print(depth.shape)
-    # print(depth)
-    # print('-------------------')
-    # print(R.shape, R)
-    # print(t.shape, t)
-    
-    rotation = np.identity(4, dtype=np.float32)
-    rotation[:3, :3] = R
-    # print(rotation)
-
-    translation = np.identity(4, dtype=np.float32)
-    translation[:3, 3] = t
 
     H, W = depth.shape
     N = H * W
-    px = intrinsics[0, 2]
-    py = intrinsics[1, 2]
 
     result = np.zeros((N, 6), dtype=np.float32)
-    K = intrinsics * np.array([[-1, 1, 1],[1, -1, 1],[1, 1, 1]], dtype=np.float32)
-    # print(K)
     for h in range(H):
         for w in range(W):
-            z = -1 * depth[h, w]
-            x, y = w, H-1-h
-            q = np.array([z*x, z*y, z], dtype=np.float32)
-            # Q = LA.inv(intrinsics) @ q
-            Q = LA.inv(K) @ q
-            homo_Q = np.concatenate([Q, [1]])
-            res = LA.inv(translation) @ LA.inv(rotation) @ homo_Q
-            # print(w, H-1-h, depth[h, w], z, q, Q, res[:3])
-            result[h*W+w, :3] = res[:3]
-            result[h*W+w, 3:] = rgb[h, w, :]
+            x, y = w, h
+            z = depth[h, w]
+            P = intrinsics @ extrinsics
+            q = np.array([[z*x], [z*y], [z]])
+            # solve the camera model system
+            res = LA.solve(P[:, :3], q-P[:, 3].reshape((3, 1)))
+            result[h*W+w, :3] = np.reshape(res, (1, 3)) * np.array([1,-1,1])
+            result[h*W+w, 3:] = rgb[h, w, :][...,::-1]
     return result
 
 
@@ -83,11 +64,11 @@ def plot_pointCloud(pc):
     fig = go.Figure(data=[go.Scatter3d(
         x=pc[:, 0],
         y=pc[:, 1],
-        z=pc[:, 2],
+        z=-pc[:, 2],
         mode='markers',
         marker=dict(
             size=2,
-            color=pc[:, 3:][..., ::-1],
+            color=pc[:, 3:],
             opacity=0.8
         )
     )])
@@ -97,8 +78,8 @@ def plot_pointCloud(pc):
 
 if __name__ == '__main__':
 
-    # imageNumbers = ['1/', '2/', '3/']
-    imageNumbers = ['A4Q3/A4Q3/3/']
+    imageNumbers = ['A4Q3/A4Q3/1/', 'A4Q3/A4Q3/2/', 'A4Q3/A4Q3/3/']
+    # imageNumbers = ['A4Q3/A4Q3/3/']
     for  imageNumber in  imageNumbers:
 
         # Part a)
